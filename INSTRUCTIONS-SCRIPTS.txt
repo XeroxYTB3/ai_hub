@@ -1,0 +1,299 @@
+﻿==========================================================================
+ AI HUB - GUIDE COMPLET DES SCRIPTS PERSONNALISES
+==========================================================================
+
+1. PRINCIPE
+-----------
+AI Hub surveille en permanence chaque compte charge (toutes les 0,8 s) et
+emet des EVENEMENTS : "l'IA a repondu", "limite atteinte", "question
+envoyee", etc. Ton script dit : "quand tel evenement arrive, fais ca".
+
+Les evenements arrivent pour TOUS les comptes charges, pas seulement celui
+qui est affiche. Pour surveiller les comptes non affiches, coche
+Parametres > Comptes et sauvegarde > "Garder tous les comptes charges en
+arriere-plan".
+
+Un evenement est emis UNE SEULE FOIS quand la situation apparait (pas en
+boucle). Exemple : "limit-hit" part quand le message de limite apparait, puis
+plus rien tant qu'il reste affiche.
+
+
+2. OU ECRIRE SON SCRIPT
+-----------------------
+Parametres (bouton en bas a gauche) > onglet "Code personnalise".
+- Ecris ton code, clique "Enregistrer et activer".
+- Il est relance automatiquement a chaque demarrage de l'app.
+- Le journal (onglet "Journal en direct") montre tous les evenements en temps
+  reel : c'est ton outil de debug. Les erreurs de ton code y apparaissent
+  aussi (type "code-error") et sous le bouton Enregistrer.
+- Ton script est sauvegarde avec tes comptes (fichier de comptes).
+
+
+3. STRUCTURE D'UN SCRIPT
+------------------------
+Tu disposes de 4 outils :  on   once   hub   sleep
+
+    on('nom-evenement', (ev) => { ...ton code... });
+
+- on('limit-hit', fn)    : fn est appelee a chaque fois.
+- once('limit-hit', fn)  : fn est appelee une seule fois, puis oubliee.
+- on('*', fn)            : fn est appelee pour TOUS les evenements.
+- on(...) renvoie une fonction : l'appeler desinscrit l'ecouteur.
+      const stop = on('typing', ev => { stop(); });
+- Tu peux utiliser async/await, donc "await sleep(2000)" pour attendre 2 s.
+- Ton code est execute dans l'app elle-meme : n'utilise PAS "document" pour
+  agir sur une page de chat (ce serait l'interface d'AI Hub). Pour agir sur la
+  page d'un compte, utilise hub.runInPage(...).
+- Une erreur dans un ecouteur n'arrete pas les autres.
+
+
+4. L'OBJET EVENEMENT (ev)
+-------------------------
+    ev.type              nom de l'evenement ("limit-hit"...)
+    ev.detail            informations en plus (voir liste ci-dessous)
+    ev.url               adresse de la page au moment de l'evenement
+    ev.ts                heure (millisecondes, comme Date.now())
+    ev.account.id        identifiant interne du compte
+    ev.account.platform  "Claude", "ChatGPT", "Gemini", ...
+    ev.account.name      le nom que tu as donne au compte
+
+
+5. LISTE COMPLETE DES EVENEMENTS
+--------------------------------
+Navigation / page
+  page-loaded      Une page finit de charger.            detail: { title }
+  url-changed      L'adresse change.                     detail: { from, to }
+  new-chat         Une nouvelle conversation s'ouvre.
+  chat-opened      Une ancienne conversation s'ouvre.
+  tab-visible      Le compte devient visible a l'ecran.
+  tab-hidden       Le compte n'est plus affiche.
+  offline          Plus de connexion internet.
+  online           La connexion est revenue.
+
+Connexion
+  logged-in        Le compte est connecte (zone de saisie presente).
+  login-required   Une page de connexion est affichee.
+  session-expired  Deconnecte alors qu'il etait connecte avant.
+
+Conversation
+  typing           Tu commences a ecrire (au plus 1 fois / 3 secondes).
+  send-attempt     Tu appuies sur Entree ou cliques sur Envoyer.
+                   detail: { via: "enter" ou "click", preview }
+  message-sent     Ta question apparait dans la conversation.
+                   detail: { count (nb de tes messages), preview }
+  response-started L'IA commence a repondre.
+                   detail: { via: "stop-button" ou "text-growth" }
+  response-complete La reponse est terminee.
+                   detail: { chars, seconds, userMessages, aiMessages,
+                             preview (300 premiers caracteres) }
+
+Limites et erreurs (detectes par le TEXTE de la page, en francais et anglais)
+  limit-hit        Limite de messages / d'utilisation atteinte.  { match }
+  limit-cleared    Le message de limite a disparu.
+  limit-soon       "Il vous reste N messages".                   { match }
+  rate-limit       Trop de requetes.                             { match }
+  overloaded       Service sature / indisponible.                { match }
+  error            "Something went wrong", erreur reseau...      { match }
+  chat-too-long    Conversation trop longue / contexte plein.    { match }
+  captcha          Verification "etes-vous humain".              { match }
+  captcha-cleared  La verification est passee.
+
+Activite
+  idle             Aucune activite depuis 2 minutes (et pas de reponse en cours).
+  active           Reprise apres inactivite.
+
+Tes propres detections (voir section 9)
+  <ton-nom>        L'element / le texte apparait.
+  <ton-nom>-gone   L'element / le texte disparait.
+
+("match" = le morceau de texte de la page qui a declenche la detection.)
+
+
+6. LES COMMANDES hub.*
+----------------------
+DESIGNER UN COMPTE (partout ou une commande attend "compte") :
+    "perso"            par son nom (majuscules ignorees)
+    "Claude:perso"     par plateforme:nom (utile si 2 comptes ont le meme nom)
+    2                  par son numero dans la liste (1 = premier)
+    ev.account.id      par son identifiant
+    ev.account         l'objet compte lui-meme
+Si "compte" est omis, c'est le compte affiche.
+
+LIRE
+    hub.accounts                  [{id, platform, name}, ...]
+    hub.active                    le compte affiche ({id, platform, name}) ou null
+    hub.state(compte)             { gen, limited, logged, last, lastAt }
+                                    gen     true pendant que l'IA repond
+                                    limited true apres limit-hit
+                                    logged  true / false / null (inconnu)
+                                    last    dernier evenement ; lastAt son heure
+    hub.available({ samePlatform, from })
+                                  premier compte NON limite (autre que "from").
+                                  samePlatform:true = meme site. null si aucun.
+
+CHANGER DE COMPTE
+    hub.switchTo(compte)          affiche ce compte. Renvoie le compte ou null.
+    hub.next({ samePlatform, skipLimited, dir })
+                                  passe au suivant (dir:-1 = precedent).
+                                  skipLimited vaut true par defaut.
+
+CONVERSATIONS
+    await hub.getConversation(compte)      texte de la conversation (ou null)
+    await hub.exportConversation(compte)   idem + copie dans le presse-papiers
+    await hub.newChat(compte)              ouvre une nouvelle conversation
+    await hub.paste(texte, { account, send })
+                                  ecrit le texte dans la zone de saisie.
+                                  send:true appuie ensuite sur Entree.
+    await hub.continueOn(compte, { from, send })
+                                  reprend la conversation du compte "from"
+                                  (par defaut l'actif) sur "compte" : ouvre une
+                                  nouvelle conversation, y colle le contexte.
+                                  send:false (defaut) = tu valides toi-meme.
+
+AGIR SUR UNE PAGE
+    await hub.runInPage(js, compte)   execute du JavaScript DANS la page du
+                                  compte et renvoie le resultat. Ex. :
+      await hub.runInPage("document.title", "perso")
+    hub.reload(compte)            recharge la page (remet aussi l'etat
+                                  "limite" a zero : si la limite est toujours
+                                  la, limit-hit repart tout de suite).
+
+DIVERS
+    hub.notify("texte")           bulle dans l'app + notification Windows
+    hub.copy("texte")             copie dans le presse-papiers
+    hub.log("a", "b")             ecrit une ligne dans le Journal (type "log")
+    hub.store.get("cle")          memoire qui survit aux redemarrages
+    hub.store.set("cle", valeur)  (nombres, textes, listes, objets)
+    hub.setLimited(compte, true)  marque / demarque un compte comme limite
+    hub.rename(compte, "nom")     renomme un compte
+    await sleep(2000)             attend 2 secondes
+
+
+7. RECETTES PRETES A COLLER
+---------------------------
+--- A. Limite atteinte : reprendre la conversation sur un autre compte -----
+on('limit-hit', async ev => {
+  const cible = hub.available({ samePlatform: true, from: ev.account.id });
+  if (!cible) return hub.notify('Limite sur ' + ev.account.name + ' : aucun autre compte ' + ev.account.platform);
+  hub.notify('Limite sur ' + ev.account.name + ' -> ' + cible.name);
+  await hub.continueOn(cible, { from: ev.account.id, send: false });
+});
+
+--- B. Limite atteinte : juste copier la conversation ----------------------
+on('limit-hit', async ev => {
+  await hub.exportConversation(ev.account.id);
+  hub.notify('Conversation copiee : colle-la sur un autre compte');
+});
+
+--- C. Etre prevenu quand un compte non affiche a fini de repondre ---------
+on('response-complete', ev => {
+  if (ev.account.id !== (hub.active || {}).id)
+    hub.notify(ev.account.name + ' a repondu : ' + ev.detail.preview.slice(0, 80));
+});
+
+--- D. Passer au compte suivant a chaque limite ----------------------------
+on('limit-hit', ev => { hub.next({ samePlatform: true }); });
+
+--- E. Compter les messages par jour et par compte -------------------------
+on('message-sent', ev => {
+  const jour = new Date().toISOString().slice(0, 10);
+  const cle = 'msgs-' + ev.account.id + '-' + jour;
+  const n = (hub.store.get(cle) || 0) + 1;
+  hub.store.set(cle, n);
+  if (n === 40) hub.notify(ev.account.name + ' : ' + n + ' messages aujourd\'hui');
+});
+
+--- F. Ton propre evenement : creer la detection "quota" (onglet Detections,
+---    type Texte, valeur  quota (epuise|depasse) ), puis : ------------------
+on('quota', ev => hub.setLimited(ev.account.id, true));
+on('quota-gone', ev => hub.setLimited(ev.account.id, false));
+
+--- G. Reessayer une fois apres une erreur ---------------------------------
+const dejaEssaye = {};
+on('error', async ev => {
+  if (dejaEssaye[ev.account.id]) return;
+  dejaEssaye[ev.account.id] = true;
+  await sleep(3000);
+  await hub.runInPage("[...document.querySelectorAll('button')].find(b => /retry|r.essayer/i.test(b.innerText))?.click()", ev.account.id);
+  await sleep(60000);
+  dejaEssaye[ev.account.id] = false;
+});
+
+--- H. Alerte si un compte est deconnecte ----------------------------------
+on('session-expired', ev => hub.notify(ev.account.name + ' est deconnecte !'));
+
+--- I. Recharger les comptes inactifs non affiches -------------------------
+on('idle', ev => { if (ev.account.id !== (hub.active || {}).id) hub.reload(ev.account.id); });
+
+--- J. Garder une copie de la derniere conversation de chaque compte -------
+on('response-complete', async ev => {
+  const t = await hub.getConversation(ev.account.id);
+  if (t) hub.store.set('derniere-' + ev.account.id, t.slice(-20000));
+});
+
+--- K. Tout voir dans le Journal ------------------------------------------
+on('*', ev => hub.log(ev.account.name, ev.type));
+
+
+8. FIABILITE ET LIMITES (a savoir)
+----------------------------------
+- Les evenements de limite / erreur sont detectes par le TEXTE de la page (FR et
+  EN). Si un site change sa phrase, la detection peut rater. Regarde le
+  Journal : si "limit-hit" n'apparait pas, cree une detection personnalisee avec
+  la phrase exacte (section 9).
+- Seuls les textes COURTS (moins de 300 caracteres) hors conversation, hors zone
+  de saisie et hors barre laterale sont analyses. Ainsi, une reponse de l'IA qui
+  parle de "limite" ne declenche pas de faux limit-hit.
+- message-sent / response-* s'appuient sur la structure des pages Claude,
+  ChatGPT et Gemini. Sur un autre site, la detection de reponse utilise le bouton
+  "Stop" et la croissance du texte.
+- hub.paste(..., {send:true}) simule la touche Entree. Commence avec send:false
+  pour verifier le comportement avant d'automatiser l'envoi.
+- Attention aux boucles : un script qui declenche l'evenement qui le
+  declenche (ex. reessayer apres "error" sans garde-fou) peut tourner a l'infini.
+  Mets toujours une condition d'arret (voir recette G).
+- Le code que tu colles a un acces complet a tes comptes. N'execute jamais un
+  script donne par quelqu'un d'autre sans le lire.
+- Le champ "preview" est tronque ; pour le texte complet, utilise
+  hub.getConversation().
+
+
+9. TES PROPRES DETECTIONS (onglet "Detections")
+-----------------------------------------------
+Clique "Ajouter une detection", puis remplis :
+  - Nom        : le nom de l'evenement que ton script ecoutera.
+  - Type       : "Selecteur CSS" (un element existe dans la page) ou
+                 "Texte (regex)" (un texte court apparait dans la page).
+  - Valeur     : ex.  .banner-limit      ou      quota (epuise|depasse)
+  - Site       : un site precis ou "Tous les sites".
+Clique "Enregistrer". L'evenement <nom> part quand ca apparait, et <nom>-gone
+quand ca disparait. Pour trouver un selecteur : dans le navigateur Chrome, clic
+droit sur l'element > Inspecter. Les regex ignorent les majuscules.
+
+
+10. SAUVEGARDE, COMPTES PERDUS, ECHANGE ENTRE INSTANCES
+-------------------------------------------------------
+- Tes comptes, ton code et tes detections sont enregistres dans un fichier
+  (dossier  %APPDATA%\ai-hub ) avec des copies de secours automatiques.
+- Une seule fenetre AI Hub peut tourner a la fois (la 2e lancee ramene la
+  premiere au premier plan). C'est ce qui evite de perdre des comptes.
+- Si un compte disparait de la liste : Parametres > "Retrouver les comptes
+  perdus". Leurs sessions sont retrouvees sur le disque ; renomme-les avec le
+  crayon. Ca se fait aussi tout seul au demarrage.
+- Pour transmettre tes comptes a une autre instance : Parametres >
+  "Enregistrer dans un fichier" (mets un mot de passe), puis dans l'autre
+  instance "Charger depuis un fichier". Les comptes arrivent connectes.
+  Ce fichier donne acces a tes comptes : ne le partage jamais.
+
+
+11. DEPANNAGE RAPIDE
+--------------------
+- Rien ne se passe : ouvre le Journal. Pas d'evenement du tout ? Le compte n'est
+  peut-etre pas charge : clique dessus une fois ou coche "Garder tous les
+  comptes charges en arriere-plan".
+- "code-error" dans le Journal : lis le message, corrige, "Enregistrer et
+  activer".
+- Un compte reste marque "limite" a tort : clique "Recharger", ou
+  hub.setLimited("nom", false).
+- Windows bloque l'exe : clic "Informations complementaires" puis "Executer
+  quand meme" (l'app n'est pas signee).
