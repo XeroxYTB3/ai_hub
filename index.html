@@ -1,40 +1,88 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f1112">
+<meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1112" media="(prefers-color-scheme: dark)">
 <title>AI Hub Remote</title>
 <style>
-:root{--bg:#f7f7f5;--sf:#fff;--rs:#efeee9;--ln:#e2e0d9;--tx:#1a1a18;--dm:#66655f;--ac:#0f766e;--on:#fff;--ok:#16a34a;--er:#dc2626}
-@media(prefers-color-scheme:dark){:root{--bg:#0f1112;--sf:#171a1b;--rs:#0b0d0e;--ln:#26292b;--tx:#e8e8e5;--dm:#9a9b96;--ac:#5eead4;--on:#06201c}}
+:root{color-scheme:light;--bg:#f7f7f5;--sf:#fff;--rs:#efeee9;--ln:#e2e0d9;--tx:#1a1a18;--dm:#66655f;--ac:#1a1a18;--ac2:#55544f;--on:#fff;--ok:#15803d;--er:#b42318;--wn:#a35a0b;
+--r-s:8px;--r-m:12px;--r-l:16px;--r-x:22px;--sh1:0 1px 2px rgba(0,0,0,.06);--sh3:0 18px 50px rgba(0,0,0,.22);--ease:cubic-bezier(.22,1,.36,1);--t:140ms;
+--sans:"Inter","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
+@media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0f1112;--sf:#171a1b;--rs:#0b0d0e;--ln:#26292b;--tx:#e8e8e5;--dm:#9a9b96;--ac:#ffffff;--ac2:#c9c9c6;--on:#111111;--ok:#4ade80;--er:#f87171;--wn:#fbbf24;--sh1:0 1px 2px rgba(0,0,0,.4);--sh3:0 18px 50px rgba(0,0,0,.6)}}
 *{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
-header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--ln);background:var(--sf)}
-header h1{flex:1;margin:0;font-size:16px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-button{font:inherit;color:inherit;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:8px 12px;cursor:pointer}
-button.pri{background:var(--ac);border-color:var(--ac);color:var(--on);font-weight:600}
-button.ic{width:38px;padding:8px 0;text-align:center;font-size:18px;line-height:1}
-button[hidden]{display:none}
-main{flex:1;overflow:auto;padding:12px;max-width:760px;width:100%;margin:0 auto}
-.card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;margin-bottom:10px;border-radius:14px}
-.card b{display:block}.card small{color:var(--dm)}.card .sp{flex:1;min-width:0}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--dm);flex:none}.dot.on{background:var(--ok)}.dot.bad{background:var(--er)}
-.dim{color:var(--dm)}.empty{text-align:center;padding:40px 12px;color:var(--dm)}
+body{background:var(--bg);color:var(--tx);font:14.5px/1.55 var(--sans);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+svg{width:18px;height:18px;flex:none}
+header{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:var(--bg);border-bottom:1px solid var(--ln)}
+.brand{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none;color:var(--on);background:linear-gradient(135deg,var(--ac),var(--ac2))}
+.logo svg{width:18px;height:18px}
+.tw{min-width:0}
+h1{margin:0;font-size:15px;font-weight:650;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sub{display:block;font-size:12px;color:var(--dm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn{font:inherit;font-weight:500;color:var(--tx);background:var(--sf);border:1px solid var(--ln);border-radius:var(--r-m);padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background var(--t),border-color var(--t),transform var(--t),opacity var(--t)}
+.btn:hover{background:var(--rs)}.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:var(--on);font-weight:600}.btn.pri:hover{background:var(--ac);opacity:.9}
+.btn.danger{background:var(--er);border-color:var(--er);color:#fff;font-weight:600}.btn.danger:hover{background:var(--er);opacity:.9}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn:focus-visible,.card:focus-visible,textarea:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.ibtn{width:36px;height:36px;padding:0;border-radius:var(--r-m);border:0;background:transparent;color:var(--dm)}
+.ibtn:hover{background:var(--rs);color:var(--tx)}
+[hidden]{display:none!important}
+main{flex:1;overflow:auto;padding:16px 14px;max-width:760px;width:100%;margin:0 auto;overscroll-behavior:contain}
+.card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;margin-bottom:10px;border-radius:var(--r-l);background:var(--sf);border:1px solid var(--ln);box-shadow:var(--sh1);cursor:pointer;color:var(--tx);font:inherit;transition:border-color var(--t),transform var(--t)}
+.card:hover{border-color:var(--ac)}.card:active{transform:scale(.99)}
+.av{width:40px;height:40px;border-radius:var(--r-m);background:var(--rs);display:grid;place-items:center;color:var(--dm);flex:none;position:relative}
+.av.on{color:var(--ac)}
+.av i{position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;background:var(--dm);border:2px solid var(--sf)}
+.av.on i{background:var(--ok)}.av.bad i{background:var(--er)}.av.run i{background:var(--ac2)}
+.card b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card small{display:block;color:var(--dm);font-size:12.5px}
+.sp{flex:1;min-width:0}.go{color:var(--dm)}
+.empty{text-align:center;padding:48px 16px;color:var(--dm)}
+.empty .big{width:56px;height:56px;margin:0 auto 14px;border-radius:var(--r-l);display:grid;place-items:center;background:var(--rs);color:var(--ac)}
+.empty .big svg{width:26px;height:26px}
+.empty h2{margin:0 0 6px;font-size:17px;color:var(--tx);font-weight:650}
+.empty p{margin:0 auto 16px;max-width:380px}
 .msgs{display:flex;flex-direction:column;gap:10px}
-.m{max-width:92%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;word-break:break-word;border:1px solid var(--ln);background:var(--sf)}
-.m.user{align-self:flex-end;background:var(--ac);color:var(--on);border-color:var(--ac)}
-.m.sys{align-self:center;font-size:12.5px;color:var(--dm);background:transparent;border-style:dashed}
-.m pre{margin:6px 0 0;padding:8px;background:var(--rs);border-radius:8px;overflow:auto;font:12px/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap}
-.run{align-self:flex-start;color:var(--dm);font-size:13px}
-#bar{display:flex;gap:8px;align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--ln);background:var(--sf)}
-#bar[hidden]{display:none}
-#in{flex:1;resize:none;max-height:160px;padding:9px 12px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);font:inherit}
-#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
-#toast.on{opacity:1}
+.m{max-width:92%;padding:10px 13px;border-radius:var(--r-l);white-space:pre-wrap;word-break:break-word;border:1px solid var(--ln);background:var(--sf);box-shadow:var(--sh1)}
+.m.user{align-self:flex-end;background:var(--ac);color:var(--on);border-color:var(--ac);border-bottom-right-radius:6px}
+.m.ai{align-self:flex-start;border-bottom-left-radius:6px}
+.m.sys{align-self:center;font-size:12.5px;color:var(--dm);background:transparent;border-style:dashed;box-shadow:none}
+.m pre{margin:8px 0 0;padding:10px;background:var(--rs);color:var(--tx);border-radius:var(--r-s);overflow:auto;font:12px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap}
+.run{align-self:flex-start;color:var(--dm);font-size:13px;display:flex;align-items:center;gap:8px}
+.run i{width:8px;height:8px;border-radius:50%;background:var(--ac);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#bar{display:flex;gap:8px;align-items:flex-end;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--ln)}
+.box{flex:1;display:flex;align-items:flex-end;gap:6px;background:var(--sf);border:1px solid var(--ln);border-radius:var(--r-x);padding:5px 5px 5px 14px;transition:border-color var(--t)}
+.box:focus-within{border-color:var(--ac)}
+#in{flex:1;resize:none;max-height:160px;padding:7px 0;border:0;background:transparent;color:var(--tx);font:inherit;outline:none}
+.sendb{width:36px;height:36px;padding:0;border-radius:50%}
+dialog{border:1px solid var(--ln);border-radius:var(--r-x);background:var(--sf);color:var(--tx);padding:22px;width:min(440px,calc(100vw - 28px));box-shadow:var(--sh3);font:inherit}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog[open]{animation:pop var(--t) var(--ease) both}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+dialog h2{margin:0 0 6px;font-size:17px;font-weight:650;letter-spacing:-.01em}
+dialog p{margin:0 0 12px;color:var(--dm)}
+dialog textarea{width:100%;padding:10px 12px;border:1px solid var(--ln);border-radius:var(--r-m);background:var(--bg);color:var(--tx);font:12.5px/1.45 ui-monospace,Consolas,monospace;resize:vertical;margin-bottom:8px}
+dialog .err{color:var(--er);min-height:20px;margin:6px 0 0;font-size:13px}
+dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+#toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translate(-50%,8px);background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity var(--t),transform var(--t);z-index:20;max-width:90vw}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
-<header><button id="back" class="ic" hidden aria-label="Retour">‹</button><h1 id="ttl">AI Hub</h1><button id="add" class="ic" aria-label="Ajouter un PC">+</button></header>
+<header>
+<button id="back" class="btn ibtn" type="button" data-i="back" aria-label="Retour" hidden></button>
+<div class="brand"><span class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/></svg></span><div class="tw"><h1 id="ttl">AI Hub</h1><small id="sub"></small></div></div>
+<button id="add" class="btn pri" type="button" data-i="plus">Ajouter</button>
+</header>
 <main id="v"></main>
-<div id="bar" hidden><textarea id="in" rows="1" placeholder="Écris ta demande…"></textarea><button id="stop" class="ic" hidden aria-label="Arrêter">■</button><button id="go" class="pri">Envoyer</button></div>
-<div id="toast"></div>
+<div id="bar" hidden>
+<div class="box"><textarea id="in" rows="1" placeholder="Écris ta demande…"></textarea><button id="stop" class="btn ibtn" type="button" data-i="stop" aria-label="Arrêter" hidden></button></div>
+<button id="go" class="btn pri sendb" type="button" data-i="send" aria-label="Envoyer"></button>
+</div>
+<dialog id="dlg"></dialog>
+<div id="toast" role="status"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>
 (function(){
@@ -43,7 +91,12 @@ const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==nul
 let pcs=LS.get('aihubPCs',[]);
 const links={},chats={};
 let view={pc:null,pid:null},peer=null,peerOk=false,tt=0;
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2200)}
+const BT=String.fromCharCode(96),FENCE=new RegExp(BT+BT+BT+'[\\w+-]*\\n?');
+const P={back:'<path d="m15 18-6-6 6-6"/>',plus:'<path d="M12 5v14M5 12h14"/>',mon:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',x:'<path d="M18 6 6 18M6 6l12 12"/>',chev:'<path d="m9 6 6 6-6 6"/>',folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',send:'<path d="M12 19V5M6 11l6-6 6 6"/>'};
+const svg=n=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+P[n]+'</svg>';
+document.querySelectorAll('[data-i]').forEach(e=>e.insertAdjacentHTML('afterbegin',svg(e.dataset.i)));
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2400)}
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 function parseLink(u){try{const h=String(u).split('#')[1]||'';const p=new URLSearchParams(h);const id=p.get('pc'),k=p.get('k');if(!id||!k||!/^aihub-[a-z0-9]{6,40}$/.test(id)||!/^[a-z0-9]{8,64}$/.test(k))return null;return{id,k,n:p.get('n')||'Mon PC'}}catch{return null}}
 function save(){LS.set('aihubPCs',pcs)}
 function addPC(o){const i=pcs.findIndex(x=>x.id===o.id);if(i>=0)Object.assign(pcs[i],o);else pcs.push(o);if(links[o.id])links[o.id].denied=false;save();connect(pcs.find(x=>x.id===o.id));render()}
@@ -75,48 +128,88 @@ function startPeer(){
   peer.on('disconnected',()=>{try{peer.reconnect()}catch{}});
   peer.on('error',e=>{if(e&&e.type!=='peer-unavailable'){peerOk=false;render();setTimeout(()=>{try{peer.destroy()}catch{}peer=null;startPeer()},6000)}});
 }
-function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 function fmt(box,t){
-  String(t||'').split(/```[\w+-]*\n?/).forEach((part,i)=>{if(i%2){const p=el('pre');p.textContent=part.replace(/\n$/,'');box.appendChild(p)}else if(part.trim()){const s=el('span');s.textContent=part.replace(/^\n+|\n+$/g,'');box.appendChild(s)}});
+  String(t||'').split(FENCE).forEach((part,i)=>{if(i%2){const p=el('pre');p.textContent=part.replace(/\n$/,'');box.appendChild(p)}else if(part.trim()){const s=el('span');s.textContent=part.replace(/^\n+|\n+$/g,'');box.appendChild(s)}});
+}
+// ---- fenêtres intégrées (remplacent prompt / confirm du navigateur) ----
+function modal(o){return new Promise(res=>{
+  const d=$('#dlg');d.textContent='';let out=null;
+  d.appendChild(el('h2','',o.title));
+  if(o.text)d.appendChild(el('p','',o.text));
+  if(o.node)d.appendChild(o.node);
+  const row=el('div','row');
+  (o.buttons||[]).forEach(b=>{const x=el('button','btn'+(b.cls?' '+b.cls:''),b.label);x.type='button';if(b.id)x.id=b.id;x.onclick=()=>{out=b.val;d.close()};row.appendChild(x)});
+  d.appendChild(row);
+  d.onclose=()=>res(out);
+  d.onclick=e=>{if(e.target===d)d.close()};
+  try{d.showModal()}catch{d.setAttribute('open','')}
+})}
+async function addDialog(){
+  const wrap=el('div'),ta=el('textarea'),err=el('div','err'),paste=el('button','btn sm','Coller depuis le presse-papiers');
+  ta.rows=4;ta.placeholder='https://…#pc=aihub-…&k=…';ta.spellcheck=false;paste.type='button';
+  wrap.append(ta,paste,err);let ok=null;
+  const upd=()=>{const v=ta.value.trim();ok=parseLink(v);err.textContent=v&&!ok?'Ce lien n’est pas valide.':'';const b=$('#okadd');if(b)b.disabled=!ok};
+  ta.oninput=upd;
+  paste.onclick=async()=>{try{ta.value=await navigator.clipboard.readText();upd()}catch{toast('Colle avec Ctrl+V ou un appui long')}};
+  const r=modal({title:'Ajouter un appareil',text:'Dans AI Hub : Paramètres › Général › Contrôle à distance. Copie le lien affiché et colle-le ici.',node:wrap,buttons:[{label:'Annuler',val:null},{label:'Ajouter',cls:'pri',id:'okadd',val:'ok'}]});
+  upd();setTimeout(()=>ta.focus(),40);
+  if((await r)==='ok'&&ok){addPC(ok);toast('Appareil ajouté')}
+}
+async function removeDialog(pc){
+  const r=await modal({title:'Retirer cet appareil ?',text:'« '+pc.n+' » sera retiré de ce navigateur. Tu pourras le rajouter avec son lien.',buttons:[{label:'Annuler',val:null},{label:'Retirer',cls:'danger',val:'ok'}]});
+  if(r==='ok'){pcs=pcs.filter(q=>q.id!==pc.id);save();try{links[pc.id]&&links[pc.id].c&&links[pc.id].c.close()}catch{}delete links[pc.id];render()}
+}
+function card(icon,cls,title,sub,extra){
+  const b=el('div','card');b.tabIndex=0;b.setAttribute('role','button');
+  const av=el('div','av '+cls);av.innerHTML=svg(icon)+'<i></i>';b.appendChild(av);
+  const s=el('div','sp');s.appendChild(el('b','',title));s.appendChild(el('small','',sub));b.appendChild(s);
+  if(extra)b.appendChild(extra);
+  b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();b.click()}});
+  return b;
+}
+function empty(icon,title,text,btn){
+  const e=el('div','empty'),big=el('div','big');big.innerHTML=svg(icon);e.appendChild(big);e.appendChild(el('h2','',title));e.appendChild(el('p','',text));
+  if(btn){const b=el('button','btn pri',btn);b.type='button';b.onclick=addDialog;e.appendChild(b)}return e;
 }
 function render(){
-  const v=$('#v'),bar=$('#bar'),back=$('#back'),ttl=$('#ttl');
+  const v=$('#v'),bar=$('#bar'),back=$('#back'),ttl=$('#ttl'),sub=$('#sub');
   back.hidden=!view.pc;bar.hidden=!view.pid;$('#add').hidden=!!view.pc;
   if(!view.pc){
-    ttl.textContent='Mes PC';v.textContent='';
-    if(typeof Peer==='undefined'){v.appendChild(el('div','empty','Impossible de charger la connexion (PeerJS). Vérifie ta connexion internet.'));return}
-    if(!pcs.length){v.appendChild(el('div','empty','Aucun PC. Dans AI Hub : Paramètres › Général › Contrôle à distance, active l’option puis ouvre le lien ou scanne le QR code sur cet appareil.'));return}
-    pcs.forEach(pc=>{const L=links[pc.id]||{};const b=el('div','card');b.style.cursor='pointer';b.style.border='1px solid var(--ln)';b.style.background='var(--sf)';
-      b.appendChild(el('i','dot'+(L.online?' on':L.denied?' bad':'')));
-      const sp=el('div','sp');sp.appendChild(el('b','',pc.n));sp.appendChild(el('small','',L.online?'en ligne · '+(L.projects||[]).length+' projet(s)':L.denied?'code refusé : rescanne le lien':peerOk?'hors ligne (AI Hub ouvert sur ce PC ?)':'connexion…'));b.appendChild(sp);
-      const x=el('button','ic','×');x.title='Retirer ce PC';x.onclick=e=>{e.stopPropagation();if(confirm('Retirer « '+pc.n+' » de cet appareil ?')){pcs=pcs.filter(q=>q.id!==pc.id);save();try{links[pc.id]&&links[pc.id].c&&links[pc.id].c.close()}catch{}delete links[pc.id];render()}};b.appendChild(x);
-      b.onclick=()=>{if(!L.online)return toast('Ce PC est hors ligne');view={pc:pc.id,pid:null};render()};v.appendChild(b)});
+    ttl.textContent='Mes appareils';sub.textContent=peerOk?pcs.length+' enregistré'+(pcs.length>1?'s':''):'Connexion…';v.textContent='';
+    if(typeof Peer==='undefined'){v.appendChild(empty('mon','Connexion impossible','Impossible de charger la connexion (PeerJS). Vérifie ta connexion internet puis recharge la page.'));return}
+    if(!pcs.length){v.appendChild(empty('mon','Aucun appareil','Ajoute ton PC pour piloter tes projets AI Hub depuis cette page.','Ajouter un appareil'));return}
+    pcs.forEach(pc=>{const L=links[pc.id]||{};
+      const x=el('button','btn ibtn');x.type='button';x.title='Retirer cet appareil';x.setAttribute('aria-label','Retirer '+pc.n);x.innerHTML=svg('x');x.onclick=e=>{e.stopPropagation();removeDialog(pc)};
+      const sub1=L.online?'En ligne · '+(L.projects||[]).length+' projet(s)':L.denied?'Code refusé : recopie le lien':peerOk?'Hors ligne (AI Hub est-il ouvert sur ce PC ?)':'Connexion…';
+      const c=card('mon',L.online?'on':L.denied?'bad':'',pc.n,sub1,x);
+      c.onclick=()=>{if(!L.online)return toast('Cet appareil est hors ligne');view={pc:pc.id,pid:null};render()};v.appendChild(c)});
     return}
   const pc=pcs.find(x=>x.id===view.pc),L=links[view.pc]||{};
   if(!pc){view={pc:null,pid:null};return render()}
   if(!view.pid){
-    ttl.textContent=pc.n;v.textContent='';
-    if(!L.online){v.appendChild(el('div','empty','PC hors ligne.'));return}
-    if(!(L.projects||[]).length){v.appendChild(el('div','empty','Aucun projet sur ce PC.'));return}
-    L.projects.forEach(p=>{const b=el('button','card');b.style.border='1px solid var(--ln)';
-      b.appendChild(el('i','dot'+(p.run?' on':'')));const sp=el('div','sp');sp.appendChild(el('b','',p.name));sp.appendChild(el('small','',(p.local?'dossier local':'en ligne')+(p.run?' · en cours…':'')));b.appendChild(sp);
-      b.onclick=()=>{view.pid=p.id;try{L.c.send({t:'open',pid:p.id})}catch{}render();setTimeout(()=>$('#in').focus(),50)};v.appendChild(b)});
+    ttl.textContent=pc.n;sub.textContent=L.online?'En ligne':'Hors ligne';v.textContent='';
+    if(!L.online){v.appendChild(empty('mon','Appareil hors ligne','Ouvre AI Hub sur ce PC, la connexion reviendra toute seule.'));return}
+    if(!(L.projects||[]).length){v.appendChild(empty('folder','Aucun projet','Crée un projet dans AI Hub : il apparaîtra ici.'));return}
+    L.projects.forEach(p=>{
+      const ch=el('span','go');ch.innerHTML=svg('chev');
+      const c=card('folder',p.run?'run':'on',p.name,(p.local?'Dossier local':'En ligne')+(p.run?' · en cours…':''),ch);
+      c.onclick=()=>{view.pid=p.id;try{L.c.send({t:'open',pid:p.id})}catch{}render();setTimeout(()=>$('#in').focus(),50)};v.appendChild(c)});
     return}
-  const pr=(L.projects||[]).find(p=>p.id===view.pid);ttl.textContent=(pr?pr.name:'Projet')+' · '+pc.n;
+  const pr=(L.projects||[]).find(p=>p.id===view.pid);ttl.textContent=pr?pr.name:'Projet';sub.textContent=pc.n+(L.online?'':' · hors ligne');
   const d=chats[view.pc+'|'+view.pid]||{msgs:[]};
   $('#stop').hidden=!d.run;
   const key=d.msgs.length+':'+((d.msgs[d.msgs.length-1]||{}).t||'').length+':'+(d.run?1:0);
   if(v.dataset.k===key&&v.firstElementChild&&v.firstElementChild.className==='msgs')return;
   const near=v.scrollHeight-v.scrollTop-v.clientHeight<160||v.dataset.k===undefined||v.dataset.k==='';
   v.dataset.k=key;v.textContent='';const w=el('div','msgs');
-  if(!d.msgs.length)w.appendChild(el('div','empty','Écris ta première demande pour ce projet.'));
+  if(!d.msgs.length)w.appendChild(empty('folder','Nouvelle conversation','Écris ta première demande pour ce projet.'));
   d.msgs.forEach(m=>{const b=el('div','m '+(m.r==='user'?'user':m.r==='ai'?'ai':'sys'));fmt(b,m.t);w.appendChild(b)});
-  if(d.run)w.appendChild(el('div','run','AI Hub travaille…'));
+  if(d.run){const r=el('div','run');r.appendChild(el('i'));r.appendChild(el('span','','AI Hub travaille…'));w.appendChild(r)}
   v.appendChild(w);if(near)v.scrollTop=v.scrollHeight;
 }
 function go(){
   const t=$('#in').value.trim();if(!t)return;const L=links[view.pc];
-  if(!L||!L.c||!L.c.open||!L.online)return toast('PC hors ligne');
+  if(!L||!L.c||!L.c.open||!L.online)return toast('Appareil hors ligne');
   L.c.send({t:'send',pid:view.pid,text:t});$('#in').value='';autoh();
 }
 function autoh(){const i=$('#in');i.style.height='auto';i.style.height=Math.min(160,i.scrollHeight)+'px'}
@@ -125,7 +218,7 @@ $('#stop').onclick=()=>{const L=links[view.pc];if(L&&L.c&&L.c.open)L.c.send({t:'
 $('#in').addEventListener('input',autoh);
 $('#in').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(pointer:fine)').matches){e.preventDefault();go()}});
 $('#back').onclick=()=>{if(view.pid){view.pid=null;$('#v').dataset.k=''}else view.pc=null;render()};
-$('#add').onclick=()=>{const u=prompt('Colle le lien de connexion affiché dans AI Hub (Paramètres › Général › Contrôle à distance) :');if(!u)return;const o=parseLink(u);if(!o)return toast('Lien invalide');addPC(o);toast('PC ajouté')};
+$('#add').onclick=addDialog;
 {const o=parseLink(location.href);if(o){addPC(o);try{history.replaceState(null,'',location.pathname+location.search)}catch{}}}
 render();startPeer();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)pcs.forEach(connect)});
