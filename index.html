@@ -13,9 +13,6 @@
 body{background:var(--bg);color:var(--tx);font:14.5px/1.6 var(--sans);display:flex;-webkit-font-smoothing:antialiased;overflow:hidden}
 svg{width:18px;height:18px;flex:none}
 [hidden]{display:none!important}
-#rail{display:none;flex-direction:column;align-items:center;gap:6px;width:56px;padding:12px 0;border-right:1px solid var(--ln);background:var(--bg);flex:none}
-#rail .sp{flex:1}
-@media(min-width:820px){#rail{display:flex}}
 .btn{font:inherit;font-weight:500;color:var(--tx);background:var(--sf);border:1px solid var(--ln);border-radius:var(--r-m);padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:background var(--t),border-color var(--t),transform var(--t),opacity var(--t)}
 .btn:hover{background:var(--rs)}.btn:active{transform:scale(.97)}
 .btn.pri{background:var(--ac);border-color:var(--ac);color:var(--on);font-weight:600}.btn.pri:hover{background:var(--ac);opacity:.88}
@@ -79,13 +76,38 @@ dialog .err{color:var(--er);min-height:20px;margin:6px 0 0;font-size:13px}
 dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 #toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translate(-50%,8px);background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity var(--t),transform var(--t);z-index:20;max-width:90vw}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes dot{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.col.enter>.card,.col.enter>.empty{animation:rise 220ms var(--ease) both}
+.col.enter>.card:nth-child(2){animation-delay:35ms}.col.enter>.card:nth-child(3){animation-delay:70ms}.col.enter>.card:nth-child(4){animation-delay:105ms}.col.enter>.card:nth-child(n+5){animation-delay:140ms}
+.m.new{animation:rise 220ms var(--ease) both}
+#bar:not([hidden]){animation:rise 220ms var(--ease) both}
+dialog[open]::backdrop{animation:fadein 160ms ease both}
+.pill{transition:border-color var(--t),color var(--t)}.pill i{transition:background var(--t)}
+.run{gap:5px}.run span{margin-left:3px}
+.run i{animation:dot 1.2s ease-in-out infinite}.run i:nth-of-type(2){animation-delay:.15s}.run i:nth-of-type(3){animation-delay:.3s}
+.m.ai .b{white-space:normal;line-height:1.7;overflow-wrap:anywhere}
+.m.ai .b>*{margin:0}.m.ai .b>*+*{margin-top:12px}
+.m.ai .b p{white-space:pre-wrap}
+.m.ai .b h3,.m.ai .b h4,.m.ai .b h5,.m.ai .b h6{font-weight:650;letter-spacing:-.01em;line-height:1.35;margin-top:20px}
+.m.ai .b h3{font-size:18px}.m.ai .b h4{font-size:16px}.m.ai .b h5,.m.ai .b h6{font-size:14.5px}
+.m.ai .b ul,.m.ai .b ol{padding-left:22px}.m.ai .b li+li{margin-top:5px}.m.ai .b li::marker{color:var(--dm)}
+.m.ai .b blockquote{padding:2px 0 2px 14px;border-left:3px solid var(--ln);color:var(--dm);white-space:pre-wrap}
+.m.ai .b hr{border:0;border-top:1px solid var(--ln);margin:18px 0}
+.m.ai .b a{color:var(--tx);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--dm)}
+.m.ai .b code{font:12.5px var(--mono);background:var(--rs);border:1px solid var(--ln);border-radius:6px;padding:1px 5px}
+.cb{border:1px solid var(--ln);border-radius:var(--r-m);background:var(--rs);overflow:hidden}
+.cbh{display:flex;align-items:center;justify-content:space-between;padding:5px 6px 5px 12px;border-bottom:1px solid var(--ln);font-size:12px;color:var(--dm)}
+.cbc{font:inherit;font-size:12px;color:var(--dm);background:transparent;border:0;border-radius:var(--r-s);padding:3px 8px;cursor:pointer;transition:background var(--t),color var(--t)}
+.cbc:hover{background:var(--sf);color:var(--tx)}
+.m.ai .b .cb pre{margin:0;border:0;border-radius:0;background:transparent;padding:12px;white-space:pre;overflow:auto}
+.tw{overflow:auto;border:1px solid var(--ln);border-radius:var(--r-m)}
+.tw table{border-collapse:collapse;width:100%;font-size:13.5px}
+.tw th,.tw td{padding:7px 12px;text-align:left;border-bottom:1px solid var(--ln);white-space:nowrap}
+.tw th{background:var(--rs);font-weight:600}.tw tr:last-child td{border-bottom:0}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
-<nav id="rail" aria-label="Navigation">
-<button id="rhome" class="btn ibtn" type="button" data-i="panel" title="Mes appareils" aria-label="Mes appareils"></button>
-<button id="radd" class="btn ibtn" type="button" data-i="plus" title="Ajouter un appareil" aria-label="Ajouter un appareil"></button>
-<span class="sp"></span>
-</nav>
 <div id="app">
 <header>
 <button id="back" class="btn ibtn" type="button" data-i="back" aria-label="Retour" hidden></button>
@@ -101,6 +123,7 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 <script>
 (function(){
 const $=s=>document.querySelector(s);
+var entering=false,lastVk='',seen={};
 const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 let pcs=LS.get('aihubPCs',[]);
 const links={},chats={};
@@ -146,6 +169,48 @@ function startPeer(){
   peer.on('disconnected',()=>{try{peer.reconnect()}catch{}});
   peer.on('error',e=>{if(e&&e.type!=='peer-unavailable'){peerOk=false;render();setTimeout(()=>{try{peer.destroy()}catch{}peer=null;startPeer()},6000)}});
 }
+/*md-start*/
+const F3='`'.repeat(3);
+function mkcol(){const c=el('div','c'+'ol');if(entering)c.className='col enter';return c}
+function inl(p,s){
+  const re=/(`[^`\n]+`)|(\*\*[^*\n]+\*\*)|(https?:\/\/[^\s<>]+[^\s<>.,;:!?)\]'"])/g;let i=0,m;
+  while((m=re.exec(s))){
+    if(m.index>i)p.appendChild(document.createTextNode(s.slice(i,m.index)));
+    if(m[1])p.appendChild(el('code','',m[1].slice(1,-1)));
+    else if(m[2])p.appendChild(el('strong','',m[2].slice(2,-2)));
+    else{const a=el('a','',m[3]);a.href=m[3];a.target='_blank';a.rel='noopener noreferrer';p.appendChild(a)}
+    i=m.index+m[0].length}
+  if(i<s.length)p.appendChild(document.createTextNode(s.slice(i)))}
+function cblock(box,lang,code){
+  const w=el('div','cb'),hd=el('div','cbh'),l=el('span','',lang||'code'),b=el('button','cbc','Copier');b.type='button';
+  b.onclick=async()=>{try{await navigator.clipboard.writeText(code);b.textContent='Copié';setTimeout(()=>{b.textContent='Copier'},1200)}catch{toast('Copie impossible')}};
+  hd.appendChild(l);hd.appendChild(b);const pr=el('pre');pr.textContent=code;w.appendChild(hd);w.appendChild(pr);box.appendChild(w)}
+function blocks(box,s){
+  const L=s.split('\n'),UL=/^\s*([-*•])\s+/,OL=/^\s*\d+[.)]\s+/;let i=0,para=[];
+  const flush=()=>{const t=para.join('\n').replace(/^\n+|\n+$/g,'');para=[];if(t.trim()){const p=el('p');inl(p,t);box.appendChild(p)}};
+  while(i<L.length){const ln=L[i];let m;
+    if(!ln.trim()){flush();i++;continue}
+    if((m=/^(#{1,4})\s+(.+)$/.exec(ln))){flush();const hh=el('h'+(m[1].length+2));inl(hh,m[2]);box.appendChild(hh);i++;continue}
+    if(UL.test(ln)||OL.test(ln)){flush();const ord=OL.test(ln),rx=ord?OL:UL,ul=el(ord?'ol':'ul');
+      while(i<L.length&&rx.test(L[i])){const li=el('li');inl(li,L[i].replace(rx,''));ul.appendChild(li);i++}
+      box.appendChild(ul);continue}
+    if(/^>\s?/.test(ln)){flush();const q=el('blockquote'),t=[];while(i<L.length&&/^>\s?/.test(L[i])){t.push(L[i].replace(/^>\s?/,''));i++}inl(q,t.join('\n'));box.appendChild(q);continue}
+    if(/^\s*([-*_])\1{2,}\s*$/.test(ln)){flush();box.appendChild(el('hr'));i++;continue}
+    if(/^\s*\|.*\|\s*$/.test(ln)&&i+1<L.length&&/^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(L[i+1])&&/-/.test(L[i+1])){flush();
+      const rows=[];while(i<L.length&&/^\s*\|.*\|\s*$/.test(L[i])){rows.push(L[i]);i++}
+      const cells=r=>r.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+      const wr=el('div','tw'),tb=el('table'),th=el('thead'),tr=el('tr');
+      cells(rows[0]).forEach(c=>{const x=el('th');inl(x,c);tr.appendChild(x)});th.appendChild(tr);tb.appendChild(th);
+      const bd=el('tbody');rows.slice(2).forEach(r=>{const t=el('tr');cells(r).forEach(c=>{const x=el('td');inl(x,c);t.appendChild(x)});bd.appendChild(t)});
+      tb.appendChild(bd);wr.appendChild(tb);box.appendChild(wr);continue}
+    para.push(ln);i++}
+  flush()}
+function md(box,text){
+  const src=String(text||'').replace(/\r/g,''),re=new RegExp(F3+'([\\w+#.-]*)[^\\n]*\\n([\\s\\S]*?)(?:'+F3+'|$)','g'),parts=[];let i=0,m;
+  while((m=re.exec(src))){if(m.index>i)parts.push([0,src.slice(i,m.index)]);parts.push([1,m[2].replace(/\n$/,''),m[1]]);i=m.index+m[0].length}
+  if(i<src.length)parts.push([0,src.slice(i)]);
+  parts.forEach(x=>{if(x[0])cblock(box,x[2],x[1]);else blocks(box,x[1])})}
+/*md-end*/
 function fmt(box,t){
   String(t||'').split(FENCE).forEach((part,i)=>{if(i%2){const p=el('pre');p.textContent=part.replace(/\n$/,'');box.appendChild(p)}else if(part.trim()){const s=el('span');s.textContent=part.replace(/^\n+|\n+$/g,'');box.appendChild(s)}});
 }
@@ -190,12 +255,12 @@ function empty(icon,title,text,btn){
 }
 function pill(txt,cls){const p=el('span','pill '+(cls||''));p.appendChild(el('i'));p.appendChild(document.createTextNode(txt));return p}
 function render(){
+  const vk=view.pc+'|'+view.pid;entering=vk!==lastVk;lastVk=vk;
   const v=$('#v'),bar=$('#bar'),back=$('#back'),ttl=$('#ttl'),pl=$('#pills');
   back.hidden=!view.pc;bar.hidden=!view.pid;$('#add').hidden=!!view.pc;pl.textContent='';
-  $('#rhome').classList.toggle('on',!view.pc);
   if(!view.pc){
     ttl.textContent='Mes appareils';pl.appendChild(pill(peerOk?pcs.length+' enregistré'+(pcs.length>1?'s':''):'Connexion…',peerOk?'ok':''));v.textContent='';
-    const col=el('div','col');v.appendChild(col);
+    const col=mkcol();v.appendChild(col);
     if(typeof Peer==='undefined'){col.appendChild(empty('mon','Connexion impossible','Impossible de charger la connexion (PeerJS). Vérifie ta connexion internet puis recharge la page.'));return}
     if(!pcs.length){col.appendChild(empty('mon','Aucun appareil','Ouvre le lien affiché dans AI Hub (Paramètres › Général › Contrôle à distance) : l’appareil s’ajoute tout seul.','Saisir un code ou un lien'));return}
     pcs.forEach(pc=>{const L=links[pc.id]||{};
@@ -208,7 +273,7 @@ function render(){
   if(!pc){view={pc:null,pid:null};return render()}
   if(!view.pid){
     ttl.textContent=pc.n;pl.appendChild(pill(L.online?'En ligne':'Hors ligne',L.online?'ok':'bad'));v.textContent='';
-    const col=el('div','col');v.appendChild(col);
+    const col=mkcol();v.appendChild(col);
     if(!L.online){col.appendChild(empty('mon','Appareil hors ligne','Ouvre AI Hub sur ce PC, la connexion reviendra toute seule.'));return}
     if(!(L.projects||[]).length){col.appendChild(empty('folder','Aucun projet','Crée un projet dans AI Hub : il apparaîtra ici.'));return}
     L.projects.forEach(p=>{
@@ -221,14 +286,14 @@ function render(){
   pl.appendChild(pill(pr&&pr.local?'Local · projet':'En ligne','ok'));pl.appendChild(pill(pc.n,L.online?'ok':'bad'));pl.appendChild(pill(d.run?'En cours':'Prêt',d.run?'run':'ok'));
   $('#stop').hidden=!d.run;
   const key=d.msgs.length+':'+((d.msgs[d.msgs.length-1]||{}).t||'').length+':'+(d.run?1:0)+':'+(L.online?1:0);
-  if(v.dataset.k===key&&v.firstElementChild&&v.firstElementChild.className==='col')return;
+  if(v.dataset.k===key&&v.firstElementChild&&v.firstElementChild.classList.contains('col'))return;
   const near=v.scrollHeight-v.scrollTop-v.clientHeight<160||v.dataset.k===undefined||v.dataset.k==='';
-  v.dataset.k=key;v.textContent='';const col=el('div','col'),w=el('div','msgs');col.appendChild(w);
+  v.dataset.k=key;v.textContent='';const col=mkcol(),w=el('div','msgs');col.appendChild(w);
   if(!d.msgs.length)w.appendChild(empty('folder','Nouvelle conversation','Écris ta première demande pour ce projet.'));
-  d.msgs.forEach(m=>{const r=m.r==='user'?'user':m.r==='ai'?'ai':'sys',b=el('div','m '+r);
+  const ck17=view.pc+'|'+view.pid,pv17=seen[ck17];d.msgs.forEach((m,i17)=>{const r=m.r==='user'?'user':m.r==='ai'?'ai':'sys',b=el('div','m '+r+(pv17!==undefined&&i17>=pv17?' new':''));
     if(r==='ai'){const mk=el('div','mk');mk.appendChild(el('i'));mk.appendChild(document.createTextNode('IA · '+pc.n));b.appendChild(mk)}
-    const t=el('div','b');fmt(t,m.t);b.appendChild(t);w.appendChild(b)});
-  if(d.run){const r=el('div','run');r.appendChild(el('i'));r.appendChild(el('span','','AI Hub travaille…'));w.appendChild(r)}
+    const t=el('div','b');(r==='ai'?md:fmt)(t,m.t);b.appendChild(t);w.appendChild(b)});seen[ck17]=d.msgs.length;
+  if(d.run){const r=el('div','run');r.appendChild(el('i'));r.appendChild(el('i'));r.appendChild(el('i'));r.appendChild(el('span','','AI Hub travaille…'));w.appendChild(r)}
   v.appendChild(col);if(near)v.scrollTop=v.scrollHeight;
 }
 function go(){
@@ -242,8 +307,7 @@ $('#stop').onclick=()=>{const L=links[view.pc];if(L&&L.c&&L.c.open)L.c.send({t:'
 $('#in').addEventListener('input',autoh);
 $('#in').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(pointer:fine)').matches){e.preventDefault();go()}});
 $('#back').onclick=()=>{if(view.pid){view.pid=null;$('#v').dataset.k=''}else view.pc=null;render()};
-$('#add').onclick=addDialog;$('#radd').onclick=addDialog;
-$('#rhome').onclick=()=>{view={pc:null,pid:null};$('#v').dataset.k='';render()};
+$('#add').onclick=addDialog;
 // ouvrir le lien = ajout automatique + entrée directe dans l'appareil
 {const o=parseLink(location.href);if(o){addPC(o);view={pc:o.id,pid:null};try{history.replaceState(null,'',location.pathname+location.search)}catch{}setTimeout(()=>toast('Appareil ajouté : '+o.n),300)}}
 render();startPeer();
