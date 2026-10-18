@@ -4,6 +4,7 @@
 <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121214" media="(prefers-color-scheme: dark)">
 <title>AI Hub Remote</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='black'/%3E%3Cg fill='none' stroke='white' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='16' cy='7' r='3.5'/%3E%3Ccircle cx='7' cy='24' r='3.5'/%3E%3Ccircle cx='25' cy='24' r='3.5'/%3E%3Cpath d='M16 10.5v5M13.5 18.5 9 21M18.5 18.5 23 21'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 :root{color-scheme:light;--bg:#f7f7f5;--sf:#fff;--rs:#efeee9;--ln:#e2e0d9;--tx:#1a1a18;--dm:#66655f;--ac:#1a1a18;--on:#fff;--ok:#15803d;--er:#b42318;--wn:#a35a0b;
 --r-s:8px;--r-m:12px;--r-l:16px;--r-x:24px;--sh1:0 1px 2px rgba(0,0,0,.06);--sh3:0 18px 50px rgba(0,0,0,.22);--ease:cubic-bezier(.22,1,.36,1);--t:140ms;
@@ -129,7 +130,7 @@ details.la pre{margin:4px 0 6px 22px;max-height:260px;overflow:auto}
 <div id="app">
 <header>
 <button id="back" class="btn ibtn" type="button" data-i="back" aria-label="Retour" hidden></button>
-<div class="ht"><h1 id="ttl">AI Hub</h1><div id="pills"></div></div>
+<svg class="logo" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="16" cy="7" r="3.5"/><circle cx="7" cy="24" r="3.5"/><circle cx="25" cy="24" r="3.5"/><path d="M16 10.5v5M13.5 18.5 9 21M18.5 18.5 23 21"/><circle cx="16" cy="16.5" r="1.8" fill="currentColor"/></svg><div class="ht"><h1 id="ttl">AI Hub</h1><div id="pills"></div></div>
 <button id="add" class="btn pri sm" type="button" data-i="plus">Ajouter</button>
 </header>
 <main id="v"></main>
@@ -137,6 +138,7 @@ details.la pre{margin:4px 0 6px 22px;max-height:260px;overflow:auto}
 </div>
 <dialog id="dlg"></dialog>
 <div id="toast" role="status"></div>
+<style>.logo{width:30px;height:30px;flex:none;color:var(--tx)}.code{width:100%;font:600 32px var(--mono);letter-spacing:.4em;text-align:center;padding:12px;border:1px solid var(--ln);border-radius:var(--r-m);background:var(--bg);color:var(--tx);margin-bottom:8px}.scanv{display:block;width:100%;max-height:260px;object-fit:cover;border-radius:var(--r-m);margin-top:8px;background:#000}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>
 (function(){
@@ -152,11 +154,6 @@ const svg=n=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 document.querySelectorAll('[data-i]').forEach(e=>e.insertAdjacentHTML('afterbegin',svg(e.dataset.i)));
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2600)}
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
-// lien complet (#pc=...&k=...) OU code court « identifiant.cle » OU « identifiant cle »
-function parseLink(u){try{u=String(u).trim();const h=u.indexOf('#')>=0?u.split('#')[1]:'';
-  if(h){const p=new URLSearchParams(h);const id=p.get('pc'),k=p.get('k');if(id&&k&&/^aihub-[a-z0-9]{6,40}$/.test(id)&&/^[a-z0-9]{8,64}$/.test(k))return{id,k,n:p.get('n')||'Mon PC'}}
-  const m=/^(aihub-[a-z0-9]{6,40})[.:\s]+([a-z0-9]{8,64})$/i.exec(u);if(m)return{id:m[1].toLowerCase(),k:m[2].toLowerCase(),n:'Mon PC'};
-  return null}catch{return null}}
 function save(){LS.set('aihubPCs',pcs)}
 function addPC(o){const i=pcs.findIndex(x=>x.id===o.id);if(i>=0)Object.assign(pcs[i],o);else pcs.push(o);if(links[o.id])links[o.id].denied=false;save();connect(pcs.find(x=>x.id===o.id));render()}
 function connect(pc){
@@ -166,14 +163,14 @@ function connect(pc){
   L.c=c;
   const fail=()=>{if(L.c!==c)return;L.busy=false;L.online=false;try{c.close()}catch{}render();setTimeout(()=>{if(pcs.some(x=>x.id===pc.id))connect(pc)},7000)};
   const to=setTimeout(()=>{if(!L.online)fail()},10000);
-  c.on('open',()=>c.send({t:'auth',k:pc.k}));
+  c.on('open',()=>c.send({t:'auth',tok:pc.tok}));
   c.on('data',d=>{clearTimeout(to);onData(pc,L,d)});
   c.on('close',()=>{clearTimeout(to);fail()});c.on('error',()=>{clearTimeout(to);fail()});
 }
 function onData(pc,L,d){
   if(!d||!d.t)return;
   if(d.t==='hello'){L.online=true;if(d.name&&d.name!==pc.n){pc.n=d.name;save()}L.c.send({t:'list'});if(view.pc===pc.id&&view.pid)L.c.send({t:'open',pid:view.pid})}
-  else if(d.t==='deny'){L.denied=true;L.online=false;toast('Code refusé par '+pc.n)}
+  else if(d.t==='deny'){L.denied=true;L.online=false;toast('Accès refusé par '+pc.n+' : associe-le de nouveau avec un nouveau code')}
   else if(d.t==='projects')L.projects=d.items||[];
   else if(d.t==='chat')chats[pc.id+'|'+d.pid]=d;
   else if(d.t==='filedata'){gotFile(d);return}
@@ -181,12 +178,37 @@ function onData(pc,L,d){
   else if(d.t==='err')toast(d.m||'Erreur');
   render();
 }
+let pairFailCb=null;
+const devName=()=>{const u=navigator.userAgent;return /iPhone|iPad/.test(u)?'iPhone':/Android/.test(u)?'Android':/Windows/.test(u)?'PC Windows':/Mac/.test(u)?'Mac':'Navigateur'};
+function pairWith(code,done){
+  let n=0;
+  const go=()=>{if(peerOk)return run();if(++n>40)return done('Pas de connexion au service (hors ligne ?)');setTimeout(go,250)};
+  function run(){
+    let fin=false;const c=peer.connect('aihub-pair-'+code,{reliable:true});
+    const end=m=>{if(fin)return;fin=true;clearTimeout(to);pairFailCb=null;try{c.close()}catch{}done(m)};
+    const to=setTimeout(()=>end('Code introuvable ou expiré'),75000);
+    pairFailCb=end;
+    c.on('open',()=>c.send({t:'pair',name:devName()}));
+    c.on('data',d=>{
+      if(d&&d.t==='paired'&&typeof d.tok==='string'&&/^aihub-[a-z0-9]{6,40}$/.test(d.id||'')){fin=true;clearTimeout(to);pairFailCb=null;addPC({id:d.id,tok:d.tok,n:String(d.name||'Mon PC').slice(0,40)});done(null);try{c.close()}catch{}}
+      else if(d&&d.t==='deny')end('Refusé sur le PC')});
+    c.on('error',()=>end('Connexion impossible'));
+  }
+  go()}
+async function scanQR(v,cb){
+  if(!('BarcodeDetector' in window)){toast('Scanner indisponible ici : utilise l’appareil photo du téléphone');return null}
+  let st;try{st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})}catch{toast('Caméra refusée');return null}
+  const det=new BarcodeDetector({formats:['qr_code']});
+  v.srcObject=st;v.hidden=false;v.muted=true;v.setAttribute('playsinline','');try{await v.play()}catch{}
+  let on=true;const stop=()=>{on=false;try{st.getTracks().forEach(t=>t.stop())}catch{}v.hidden=true};
+  (async()=>{while(on){try{const r=await det.detect(v);for(const x of r){const m=/(?:c=|^)(\d{6})\b/.exec(x.rawValue||'');if(m){stop();cb(m[1]);return}}}catch{}await new Promise(r=>setTimeout(r,250))}})();
+  return stop}
 function startPeer(){
   if(typeof Peer==='undefined'){render();return}
   peer=new Peer();
   peer.on('open',()=>{peerOk=true;pcs.forEach(connect);render()});
   peer.on('disconnected',()=>{try{peer.reconnect()}catch{}});
-  peer.on('error',e=>{if(e&&e.type!=='peer-unavailable'){peerOk=false;render();setTimeout(()=>{try{peer.destroy()}catch{}peer=null;startPeer()},6000)}});
+  peer.on('error',e=>{if(e&&e.type==='peer-unavailable'&&pairFailCb&&/aihub-pair-/.test(String(e.message||''))){pairFailCb('Code introuvable ou expiré');return}if(e&&e.type!=='peer-unavailable'){peerOk=false;render();setTimeout(()=>{try{peer.destroy()}catch{}peer=null;startPeer()},6000)}});
 }
 /*md-start*/
 const F3='`'.repeat(3);
@@ -245,16 +267,17 @@ function modal(o){return new Promise(res=>{
   d.onclick=e=>{if(e.target===d)d.close()};
   try{d.showModal()}catch{d.setAttribute('open','')}
 })}
-async function addDialog(){
-  const wrap=el('div'),ta=el('textarea'),err=el('div','err'),paste=el('button','btn sm','Coller');
-  ta.rows=3;ta.placeholder='Lien ou code (aihub-…)';ta.spellcheck=false;paste.type='button';
-  wrap.append(ta,paste,err);let ok=null;
-  const upd=()=>{const v=ta.value.trim();ok=parseLink(v);err.textContent=v&&!ok?'Ni un lien ni un code valide.':'';const b=$('#okadd');if(b)b.disabled=!ok};
-  ta.oninput=upd;
-  paste.onclick=async()=>{try{ta.value=await navigator.clipboard.readText();upd()}catch{toast('Colle avec Ctrl+V ou un appui long')}};
-  const r=modal({title:'Ajouter un appareil',text:'Le plus simple : ouvre directement le lien affiché dans AI Hub, l’appareil s’ajoute tout seul. Sinon colle ici le lien ou le code (Paramètres › Général › Contrôle à distance).',node:wrap,buttons:[{label:'Annuler',val:null},{label:'Ajouter',cls:'pri',id:'okadd',val:'ok'}]});
-  upd();setTimeout(()=>ta.focus(),40);
-  if((await r)==='ok'&&ok){addPC(ok);toast('Appareil ajouté')}
+async function addDialog(pre){
+  const wrap=el('div'),inp=el('input','code'),err=el('div','err'),scan=el('button','btn sm','Scanner un QR'),vid=el('video','scanv');
+  inp.inputMode='numeric';inp.maxLength=7;inp.placeholder='000000';inp.autocomplete='one-time-code';inp.spellcheck=false;scan.type='button';vid.hidden=true;
+  wrap.append(inp,scan,vid,err);let busy=false,stop=null;
+  const submit=()=>{if(busy)return;busy=true;err.style.color='var(--dm)';err.textContent='Connexion… confirme sur le PC';
+    pairWith(inp.value,m=>{busy=false;if(m){err.style.color='';err.textContent=m;inp.select()}else{toast('Appareil ajouté');$('#dlg').close()}})};
+  inp.oninput=()=>{inp.value=inp.value.replace(/\D/g,'').slice(0,6);if(inp.value.length===6)submit()};
+  scan.onclick=async()=>{if(stop)stop();stop=await scanQR(vid,c=>{inp.value=c;submit()})};
+  const r=modal({title:'Ajouter un PC',text:'Sur le PC : Paramètres › Général › Contrôle à distance › Afficher un code. Saisis les 6 chiffres ou scanne le QR.',node:wrap,buttons:[{label:'Fermer',val:null}]});
+  if(typeof pre==='string'&&/^\d{6}$/.test(pre)){inp.value=pre;submit()}
+  setTimeout(()=>inp.focus(),40);await r;if(stop)stop();
 }
 async function removeDialog(pc){
   const r=await modal({title:'Retirer cet appareil ?',text:'« '+pc.n+' » sera retiré de ce navigateur. Tu pourras le rajouter avec son lien.',buttons:[{label:'Annuler',val:null},{label:'Retirer',cls:'danger',val:'ok'}]});
@@ -387,8 +410,7 @@ $('#in').addEventListener('input',autoh);
 $('#in').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&matchMedia('(pointer:fine)').matches){e.preventDefault();go()}});
 $('#back').onclick=()=>{if(view.pid){view.pid=null;$('#v').dataset.k=''}else view.pc=null;render()};
 $('#add').onclick=addDialog;
-// ouvrir le lien = ajout automatique + entrée directe dans l'appareil
-{const o=parseLink(location.href);if(o){addPC(o);view={pc:o.id,pid:null};try{history.replaceState(null,'',location.pathname+location.search)}catch{}setTimeout(()=>toast('Appareil ajouté : '+o.n),300)}}
+{const m=/[#&?]c=(\d{6})\b/.exec(location.hash||'');if(m){try{history.replaceState(null,'',location.pathname+location.search)}catch{}setTimeout(()=>addDialog(m[1]),400)}}
 render();startPeer();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)pcs.forEach(connect)});
 })();
