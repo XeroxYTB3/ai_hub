@@ -349,8 +349,8 @@ function fcards(pcid,pid,fs){
 function acts(list,tok,chg){
   const w=el('div','lacts');
   (list||[]).forEach(x=>{const ok=x.o?'ok':'err';
-    if(x.d){const d=el('details','la '+ok),s=el('summary');s.appendChild(el('i','',x.o?'✔':'✕'));s.appendChild(el('span','',x.t));d.appendChild(s);const p=el('pre');p.textContent=x.d;d.appendChild(p);w.appendChild(d)}
-    else{const r=el('div','la '+ok);r.appendChild(el('i','',x.o?'✔':'✕'));r.appendChild(el('span','',x.t));w.appendChild(r)}});
+    if(x.d){const d=el('details','la '+ok),s=el('summary');s.appendChild(el('i','',x.o?'OK':'Échec'));s.appendChild(el('span','',x.t));d.appendChild(s);const p=el('pre');p.textContent=x.d;d.appendChild(p);w.appendChild(d)}
+    else{const r=el('div','la '+ok);r.appendChild(el('i','',x.o?'OK':'Échec'));r.appendChild(el('span','',x.t));w.appendChild(r)}});
   if(chg)w.appendChild(el('div','lchg',chg));
   if(tok)w.appendChild(el('div','ltok',tok));
   return w}
